@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Portal Berita & Rekomendasi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/">Portal Berita</a>
+      <form class="d-flex" action="{{ url_for('home') }}" method="get">
+        <input class="form-control me-2" type="search" placeholder="Cari berita..." name="q" value="{{ search_query or '' }}">
+        <button class="btn btn-outline-success" type="submit">Cari</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+
+    {% if search_query %}
+      <h2 class="mb-4">Hasil Pencarian untuk: <span class="text-primary">"{{ search_query }}"</span></h2>
+      <p class="text-muted">Menemukan {{ total_items }} berita.</p>
+    {% else %}
+      <h2 class="mb-4">Jelajahi Berita</h2>
+    {% endif %}
+
+    {% if samples|length > 0 %}
+    <div class="row">
+      {% for item in samples %}
+      <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <img src="https://source.unsplash.com/600x400/?news,{{ loop.index }}" class="card-img-top" alt="Gambar Berita">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">
+              <a href="/detail/{{ item.Judul }}">{{ item.Judul }}</a>
+            </h5>
+            <p class="card-text text-muted flex-grow-1">{{ item.Content[:120] }}...</p>
+            <a href="/detail/{{ item.Judul }}" class="btn btn-outline-secondary mt-auto">Baca Selengkapnya</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% elif search_query %}
+      <p>Tidak ada hasil yang cocok dengan pencarian Anda.</p>
+    {% endif %}
+
+
+    {% if total_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% for page_num in range(1, total_pages + 1) %}
+          <li class="page-item {% if page_num == current_page %}active{% endif %}">
+            {% if search_query %}
+              <a class="page-link" href="{{ url_for('home', q=search_query, page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+              <a class="page-link" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
+    {% endif %}
+
+  </div>
+
+  <footer class="text-center text-muted py-4 mt-4 bg-light">
+    <p>&copy; 2025 Proyek Sistem Rekomendasi</p>
+  </footer>
+
+</body>
+</html>
