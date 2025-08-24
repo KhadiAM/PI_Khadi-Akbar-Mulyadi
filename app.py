@@ -12,9 +12,10 @@ app = Flask(__name__)
 # ==========================
 # Load data
 # ==========================
-CSV_PATH = "news_with_cluster.csv"     # gunakan file clustered yang kecil
-VEC_PATH = "tfidf_vectorizer.pkl"
-MAT_PATH = "tfidf_matrix.pkl"
+BASE_DIR = os.path.dirname(__file__)
+CSV_PATH = os.path.join(BASE_DIR, "news_with_cluster.csv")
+VEC_PATH = os.path.join(BASE_DIR, "tfidf_vectorizer.pkl")
+MAT_PATH = os.path.join(BASE_DIR, "tfidf_matrix.pkl")
 
 if not os.path.exists(CSV_PATH):
     raise FileNotFoundError(f"File CSV tidak ditemukan: {CSV_PATH}")
