@@ -1,13 +1,14 @@
 body {
   background-color: #f8f9fa;
 }
+
 .card {
-  transition: transform .2s ease-in-out, box-shadow .2s ease-in-out;
+  transition: transform .2s ease, box-shadow .2s ease;
   border: none;
 }
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15)!important;
+  transform: translateY(-4px);
+  box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.1)!important;
 }
 .card-title a {
   color: #212529;

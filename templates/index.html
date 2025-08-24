@@ -1,76 +1,93 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Portal Berita & Rekomendasi</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand" href="/">Portal Berita</a>
-      <form class="d-flex" action="{{ url_for('home') }}" method="get">
-        <input class="form-control me-2" type="search" placeholder="Cari berita..." name="q" value="{{ search_query or '' }}">
-        <button class="btn btn-outline-success" type="submit">Cari</button>
-      </form>
-    </div>
-  </nav>
+<nav class="navbar navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('home') }}">Portal Berita</a>
+    <form class="d-flex" action="{{ url_for('home') }}" method="get">
+      <input class="form-control me-2" type="search" placeholder="Cari judul/konten..." name="q" value="{{ q or '' }}">
+      <input type="hidden" name="seed" value="{{ seed }}">
+      <button class="btn btn-outline-light" type="submit">Cari</button>
+    </form>
+  </div>
+</nav>
 
-  <div class="container my-4">
+<div class="container my-4">
+  {% if q %}
+    <h2 class="mb-2">Hasil untuk: <span class="text-primary">"{{ q }}"</span></h2>
+    <p class="text-muted">Menemukan {{ total_items }} berita.</p>
+  {% else %}
+    <h2 class="mb-4">Jelajahi Berita</h2>
+  {% endif %}
 
-    {% if search_query %}
-      <h2 class="mb-4">Hasil Pencarian untuk: <span class="text-primary">"{{ search_query }}"</span></h2>
-      <p class="text-muted">Menemukan {{ total_items }} berita.</p>
-    {% else %}
-      <h2 class="mb-4">Jelajahi Berita</h2>
-    {% endif %}
-
-    {% if samples|length > 0 %}
+  {% if news and news|length > 0 %}
     <div class="row">
-      {% for item in samples %}
+      {% for item in news %}
       <div class="col-12 col-md-6 col-lg-4 mb-4">
         <div class="card h-100 shadow-sm">
-          <img src="https://source.unsplash.com/600x400/?news,{{ loop.index }}" class="card-img-top" alt="Gambar Berita">
           <div class="card-body d-flex flex-column">
             <h5 class="card-title">
-              <a href="/detail/{{ item.Judul }}">{{ item.Judul }}</a>
+              <a href="{{ url_for('detail', rowid=item['rowid'], q=q, seed=seed, page=page) }}">{{ item['Judul'] }}</a>
             </h5>
-            <p class="card-text text-muted flex-grow-1">{{ item.Content[:120] }}...</p>
-            <a href="/detail/{{ item.Judul }}" class="btn btn-outline-secondary mt-auto">Baca Selengkapnya</a>
+            <p class="card-text text-muted flex-grow-1" style="white-space: pre-wrap;">{{ item['snippet'] }}...</p>
+            <a href="{{ url_for('detail', rowid=item['rowid'], q=q, seed=seed, page=page) }}" class="btn btn-primary mt-auto">Baca Selengkapnya</a>
           </div>
         </div>
       </div>
       {% endfor %}
     </div>
-    {% elif search_query %}
-      <p>Tidak ada hasil yang cocok dengan pencarian Anda.</p>
-    {% endif %}
+  {% else %}
+    <p>Tidak ada berita untuk ditampilkan.</p>
+  {% endif %}
 
+  {% if total_pages > 1 %}
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('home', page=page-1, q=q, seed=seed) }}">Sebelumnya</a>
+      </li>
 
-    {% if total_pages > 1 %}
-    <nav aria-label="Page navigation" class="mt-4">
-      <ul class="pagination justify-content-center">
-        {% for page_num in range(1, total_pages + 1) %}
-          <li class="page-item {% if page_num == current_page %}active{% endif %}">
-            {% if search_query %}
-              <a class="page-link" href="{{ url_for('home', q=search_query, page=page_num) }}">{{ page_num }}</a>
-            {% else %}
-              <a class="page-link" href="{{ url_for('home', page=page_num) }}">{{ page_num }}</a>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    </nav>
-    {% endif %}
+      {% set start_p = [1, page-3]|max %}
+      {% set end_p = [total_pages, page+3]|min %}
+      {% if start_p > 1 %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('home', page=1, q=q, seed=seed) }}">1</a></li>
+        {% if start_p > 2 %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endif %}
 
-  </div>
+      {% for p in range(start_p, end_p+1) %}
+        <li class="page-item {% if p == page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('home', page=p, q=q, seed=seed) }}">{{ p }}</a>
+        </li>
+      {% endfor %}
 
-  <footer class="text-center text-muted py-4 mt-4 bg-light">
-    <p>&copy; 2025 Proyek Sistem Rekomendasi</p>
-  </footer>
+      {% if end_p < total_pages %}
+        {% if end_p < total_pages - 1 %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        <li class="page-item"><a class="page-link" href="{{ url_for('home', page=total_pages, q=q, seed=seed) }}">{{ total_pages }}</a></li>
+      {% endif %}
+
+      <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for('home', page=page+1, q=q, seed=seed) }}">Berikutnya</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<footer class="text-center text-muted py-4 mt-4 bg-light">
+  <p>&copy; 2025 Proyek Sistem Rekomendasi</p>
+</footer>
 
 </body>
 </html>
