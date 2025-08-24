@@ -29,3 +29,5 @@ venv/
 # VSCode / IDE settings
 .vscode/
 .idea/
+
+.gitignore
